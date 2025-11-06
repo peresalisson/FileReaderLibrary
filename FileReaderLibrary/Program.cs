@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FileReaderLibrary.Interfaces;
+using System;
 
 namespace FileReaderLibrary
 {
@@ -6,17 +7,19 @@ namespace FileReaderLibrary
     {
         static void Main(string[] args)
         {
-            var reader = new TextFileReader();
+            Console.WriteLine("File Reading Library - Version 2");
+            Console.WriteLine("Reading text and XML files...\n");
 
-            try
-            {
-                string content = reader.ReadFile("TestFiles/sample.txt");
-                Console.WriteLine(content);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+            // Test text file
+            TextFileReader textReader = new();
+            Console.WriteLine("=== TEXT FILE ===");
+            Console.WriteLine(textReader.ReadFile("TestFiles/sample.txt"));
+
+            // Test XML file
+            XmlFileReader xmlReader = new();
+            Console.WriteLine("\n=== XML FILE ===");
+            Console.WriteLine(xmlReader.ReadFile("TestFiles/sample.xml"));
+
         }
     }
 }
