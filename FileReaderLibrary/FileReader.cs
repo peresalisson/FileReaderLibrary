@@ -13,6 +13,27 @@ namespace FileReaderLibrary
         }
     }
 
+    public class ReverseEncryptionStrategy : IEncryptionStrategy
+    {
+        public string Decrypt(string content)
+        {
+            char[] charArray = content.ToCharArray();
+            Array.Reverse(charArray);
+            return new string(charArray);
+        }
+    }
+
+    public class EncryptedTextFileReader(IEncryptionStrategy encryptionStrategy) : IFileReader
+    {
+        private readonly IEncryptionStrategy _encryptionStrategy = encryptionStrategy;
+
+        public string ReadFile(string filePath)
+        {
+            string encryptedContent = File.ReadAllText(filePath);
+            return _encryptionStrategy.Decrypt(encryptedContent);
+        }
+    }
+
     public class XmlFileReader : IFileReader
     {
         public string ReadFile(string filePath)

@@ -20,6 +20,11 @@ namespace FileReaderLibrary
             Console.WriteLine("\n=== XML FILE ===");
             Console.WriteLine(xmlReader.ReadFile("TestFiles/sample.xml"));
 
+            // Test encrypted text file
+            IEncryptionStrategy encryption = new ReverseEncryptionStrategy();
+            EncryptedTextFileReader encryptedReader = new(encryption);
+            Console.WriteLine("\n=== ENCRYPTED TEXT FILE ===");
+            Console.WriteLine(encryptedReader.ReadFile("TestFiles/encrypted.txt"));
         }
     }
 }
