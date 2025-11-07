@@ -1,80 +1,181 @@
 ﻿using FileReaderLibrary.Factories;
+using FileReaderLibrary.Services;
 
 namespace FileReaderLibrary
 {
     class Program
     {
+        private static readonly FileDiscoveryService _fileDiscovery = new();
+
         static void Main(string[] args)
         {
-            var textReader = FileReaderFactory.CreateReader("txt", false, false, "");
-            var xmlReader = FileReaderFactory.CreateReader("xml", false, false, "");
-            var encryptedXmlReader = FileReaderFactory.CreateReader("xml", true, false, "");
-            var encryptedJsonReader = FileReaderFactory.CreateReader("json", true, false, "");
-            var jsonReader = FileReaderFactory.CreateReader("json", false, false, "");
+            Console.WriteLine("==============================================");
+            Console.WriteLine("  File Reading Library - Interactive CLI");
+            Console.WriteLine("==============================================\n");
 
-            // Test text file
-            Console.WriteLine("=== TEXT FILE ===");
-            Console.WriteLine(textReader.ReadFile("TestFiles/sample.txt"));
-
-            // Test XML file
-            Console.WriteLine("\n=== XML FILE ===");
-            Console.WriteLine(xmlReader.ReadFile("TestFiles/sample.xml"));
-
-            // Test encrypted text file
-            var encryptedReader = FileReaderFactory.CreateReader("txt", true, false, "");
-            Console.WriteLine("\n=== ENCRYPTED TEXT FILE ===");
-            Console.WriteLine(encryptedReader.ReadFile("TestFiles/encrypted.txt"));
-
-            // Test XML as admin
-            Console.WriteLine("\n=== READING AS ADMIN ===");
-            var adminReader = FileReaderFactory.CreateReader("xml", false, true, "admin");
-            Console.WriteLine(adminReader.ReadFile("TestFiles/secure.xml"));
-
-            // Test XML regular user
-            Console.WriteLine("\n=== READING AS USER ===");
-            var userReader = FileReaderFactory.CreateReader("xml", false, true, "user");
-            Console.WriteLine(userReader.ReadFile("TestFiles/secure.xml"));
-
-            // Test unauthorized access for XML
-            Console.WriteLine("\n=== TRYING TO READ CONFIDENTIAL FILE AS USER ===");
-            try
+            while (true)
             {
-                Console.WriteLine(userReader.ReadFile("TestFiles/confidential.xml"));
+                try
+                {
+                    Console.WriteLine("\n--- New File Reading Session ---\n");
+
+                    string? fileType = GetFileType();
+                    if (fileType == null) break;
+
+                    if (!_fileDiscovery.HasFiles(fileType))
+                    {
+                        Console.WriteLine($"No {fileType.ToUpper()} files found in TestFiles directory.");
+                        Console.WriteLine("Please add some test files and try again.");
+                        continue;
+                    }
+
+                    string? selectedFile = SelectFile(fileType);
+                    if (selectedFile == null) continue;
+
+                    bool useEncryption = GetYesNoAnswer("Use encryption?");
+
+                    bool useSecurity = GetYesNoAnswer("Use role-based security?");
+
+                    string? userRole = null;
+                    if (useSecurity)
+                    {
+                        userRole = GetRole();
+                    }
+
+                    string filePath = _fileDiscovery.GetFullPath(selectedFile);
+                    ReadAndDisplayFile(fileType, filePath, useEncryption, useSecurity, userRole);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Console.WriteLine($"\n[SECURITY ERROR] {ex.Message}");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    Console.WriteLine($"\n[FILE ERROR] File not found: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"\n[ERROR] {ex.Message}");
+                }
             }
-            catch (UnauthorizedAccessException ex)
+        }
+
+        private static string? GetFileType()
+        {
+            Console.WriteLine("Available file types:");
+            Console.WriteLine("  1. TEXT");
+            Console.WriteLine("  2. XML");
+            Console.WriteLine("  3. JSON");
+            Console.WriteLine("  0. Exit");
+            Console.Write("\nSelect file type (1-3) or 0 to exit: ");
+
+            string? input = Console.ReadLine()?.Trim();
+
+            switch (input)
             {
-                Console.WriteLine($"ACCESS DENIED: {ex.Message}");
+                case "1":
+                    return "text";
+                case "2":
+                    return "xml";
+                case "3":
+                    return "json";
+                case "0":
+                    Console.WriteLine("\nThank you for using File Reading Library. Goodbye!");
+                    return null;
+                default:
+                    Console.WriteLine("Invalid selection. Please try again.");
+                    return GetFileType();
+            }
+        }
+
+        private static string? SelectFile(string fileType)
+        {
+            var files = _fileDiscovery.GetFilesByType(fileType);
+
+            Console.WriteLine($"\nAvailable {fileType.ToUpper()} files:");
+            for (int i = 0; i < files.Count; i++)
+            {
+                Console.WriteLine($"  {i + 1}. {files[i]}");
+            }
+            Console.WriteLine("  0. Go back");
+
+            Console.Write($"\nSelect a file (1-{files.Count}) or 0 to go back: ");
+            string? input = Console.ReadLine()?.Trim();
+
+            if (int.TryParse(input, out int selection))
+            {
+                if (selection == 0)
+                {
+                    return null;
+                }
+                if (selection > 0 && selection <= files.Count)
+                {
+                    return files[selection - 1];
+                }
             }
 
-            // Test encrypted XML file
-            Console.WriteLine("\n=== ENCRYPTED XML FILE ===");
-            Console.WriteLine(encryptedXmlReader.ReadFile("TestFiles/encrypted.xml"));
+            Console.WriteLine("Invalid selection. Please try again.");  
+            return SelectFile(fileType);
+        }
 
-            // Test Text-File as admin
-            Console.WriteLine("\n=== READING TEXT AS ADMIN ===");
-            var textFileAdminReader = FileReaderFactory.CreateReader("txt", false, true, "admin");
-            Console.WriteLine(textFileAdminReader.ReadFile("TestFiles/secure.txt"));
+        private static bool GetYesNoAnswer(string question)
+        {
+            Console.Write($"{question} (y/n): ");
+            string? input = Console.ReadLine()?.Trim()?.ToLower();
 
-            // Test Text-File as user
-            Console.WriteLine("\n=== READING TEXT AS USER ===");
-            var textFileUserReader = FileReaderFactory.CreateReader("txt", false, true, "user");
-            Console.WriteLine(textFileUserReader.ReadFile("TestFiles/secure.txt"));
+            if (input == "y" || input == "yes")
+                return true;
+            if (input == "n" || input == "no")
+                return false;
 
-            // Test JSON file
-            Console.WriteLine("\n=== JSON FILE ===");
-            Console.WriteLine(jsonReader.ReadFile("TestFiles/sample.json"));
+            Console.WriteLine("Please enter 'y' or 'n'.");
+            return GetYesNoAnswer(question);
+        }
 
-            // Test encrypted JSON file
-            Console.WriteLine("\n=== ENCRYPTED JSON FILE ===");
-            Console.WriteLine(encryptedJsonReader.ReadFile("TestFiles/encrypted.json"));
+        private static string GetRole()
+        {
+            Console.WriteLine("\nAvailable roles:");
+            Console.WriteLine("  1. Admin (full access)");
+            Console.WriteLine("  2. User (limited access)");
+            Console.WriteLine("  3. Guest (minimal access)");
+            Console.Write("\nSelect your role (1-3): ");
 
-            Console.WriteLine("\n=== SECURED JSON (User) ===");
-            var userJsonReader = FileReaderFactory.CreateReader("json", false, true, "user");
-            Console.WriteLine(userJsonReader.ReadFile("TestFiles/secure.json"));
+            string? input = Console.ReadLine()?.Trim();
 
-            Console.WriteLine("\n=== SECURED JSON (Admin) ===");
-            var adminJsonReader = FileReaderFactory.CreateReader("json", false, true, "admin");
-            Console.WriteLine(adminJsonReader.ReadFile("TestFiles/secure.json"));
+            switch (input)
+            {
+                case "1":
+                    return "admin";
+                case "2":
+                    return "user";
+                case "3":
+                    return "guest";
+                default:
+                    Console.WriteLine("Invalid selection. Please try again.");
+                    return GetRole();
+            }
+        }
+
+        private static void ReadAndDisplayFile(
+            string fileType,
+            string filePath,
+            bool useEncryption,
+            bool useSecurity,
+            string? userRole)
+        {
+            var reader = FileReaderFactory.CreateReader(fileType, useEncryption, useSecurity, userRole);
+            string content = reader.ReadFile(filePath);
+
+            Console.WriteLine("\n" + new string('=', 60));
+            Console.WriteLine("FILE CONTENT");
+            Console.WriteLine(new string('=', 60));
+            Console.WriteLine(content);
+            Console.WriteLine(new string('=', 60));
+
+            Console.WriteLine("\nConfiguration:");
+            Console.WriteLine($"  File Type: {fileType.ToUpper()}");
+            Console.WriteLine($"  Encryption: {(useEncryption ? "Enabled" : "Disabled")}");
+            Console.WriteLine($"  Security: {(useSecurity ? $"Enabled (Role: {userRole ?? "Unknown"})" : "Disabled")}");
         }
     }
 }
