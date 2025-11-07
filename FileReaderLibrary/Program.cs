@@ -28,17 +28,17 @@ namespace FileReaderLibrary
             Console.WriteLine("\n=== ENCRYPTED TEXT FILE ===");
             Console.WriteLine(encryptedReader.ReadFile("TestFiles/encrypted.txt"));
 
-            // Test as admin
+            // Test XML as admin
             Console.WriteLine("\n=== READING AS ADMIN ===");
             SecuredXmlFileReader adminReader = new(security, "admin");
             Console.WriteLine(adminReader.ReadFile("TestFiles/secure.xml"));
 
-            // Test as regular user
+            // Test XML regular user
             Console.WriteLine("\n=== READING AS USER ===");
             SecuredXmlFileReader userReader = new(security, "user");
             Console.WriteLine(userReader.ReadFile("TestFiles/secure.xml"));
 
-            // Test unauthorized access
+            // Test unauthorized access for XML
             Console.WriteLine("\n=== TRYING TO READ CONFIDENTIAL FILE AS USER ===");
             try
             {
@@ -49,8 +49,19 @@ namespace FileReaderLibrary
                 Console.WriteLine($"ACCESS DENIED: {ex.Message}");
             }
 
+            // Test encrypted XML file
             Console.WriteLine("\n=== ENCRYPTED XML FILE ===");
             Console.WriteLine(encryptedXmlReader.ReadFile("TestFiles/encrypted.xml"));
+
+            // Test Text-File as admin
+            Console.WriteLine("\n=== READING TEXT AS ADMIN ===");
+            SecuredTextFileReader textFileAdminReader = new(security, "admin");
+            Console.WriteLine(textFileAdminReader.ReadFile("TestFiles/secure.txt"));
+
+            // Test Text-File as user
+            Console.WriteLine("\n=== READING TEXT AS USER ===");
+            SecuredTextFileReader textFileUserReader = new(security, "user");
+            Console.WriteLine(textFileUserReader.ReadFile("TestFiles/secure.txt"));
         }
     }
 }
