@@ -1,5 +1,4 @@
 ﻿using FileReaderLibrary.Interfaces;
-using System.IO;
 
 namespace FileReaderLibrary.Services
 {
