@@ -10,7 +10,9 @@ namespace FileReaderLibrary
         static void Main(string[] args)
         {
             IRoleBasedSecurityStrategy security = new SimpleRoleBasedSecurityStrategy();
-            
+            IEncryptionStrategy encryption = new ReverseEncryptionStrategy();
+            IFileReader encryptedXmlReader = new EncryptedXmlFileReader(encryption);
+
             // Test text file
             TextFileReader textReader = new();
             Console.WriteLine("=== TEXT FILE ===");
@@ -22,7 +24,6 @@ namespace FileReaderLibrary
             Console.WriteLine(xmlReader.ReadFile("TestFiles/sample.xml"));
 
             // Test encrypted text file
-            IEncryptionStrategy encryption = new ReverseEncryptionStrategy();
             EncryptedTextFileReader encryptedReader = new(encryption);
             Console.WriteLine("\n=== ENCRYPTED TEXT FILE ===");
             Console.WriteLine(encryptedReader.ReadFile("TestFiles/encrypted.txt"));
@@ -47,6 +48,9 @@ namespace FileReaderLibrary
             {
                 Console.WriteLine($"ACCESS DENIED: {ex.Message}");
             }
+
+            Console.WriteLine("\n=== ENCRYPTED XML FILE ===");
+            Console.WriteLine(encryptedXmlReader.ReadFile("TestFiles/encrypted.xml"));
         }
     }
 }
