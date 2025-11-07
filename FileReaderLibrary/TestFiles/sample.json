@@ -1,0 +1,6 @@
+{
+  "name": "File Reader Library",
+  "version": "7.0",
+  "features": [ "Text", "XML", "JSON" ],
+  "author": "Alisson Peres"
+}
