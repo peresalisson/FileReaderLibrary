@@ -62,6 +62,11 @@ namespace FileReaderLibrary
             Console.WriteLine("\n=== READING TEXT AS USER ===");
             SecuredTextFileReader textFileUserReader = new(security, "user");
             Console.WriteLine(textFileUserReader.ReadFile("TestFiles/secure.txt"));
+
+            // Test JSON file
+            IFileReader jsonReader = new JsonFileReader();
+            Console.WriteLine("\n=== JSON FILE ===");
+            Console.WriteLine(jsonReader.ReadFile("TestFiles/sample.json"));
         }
     }
 }
