@@ -5,7 +5,7 @@ namespace FileReaderLibrary.Services
 {
     public class JsonFileReader : IFileReader
     {
-        private static readonly JsonSerializerOptions CachedOptions = new JsonSerializerOptions { WriteIndented = true };
+        private static readonly JsonSerializerOptions CachedOptions = new() { WriteIndented = true };
 
         public string ReadFile(string filePath)
         {

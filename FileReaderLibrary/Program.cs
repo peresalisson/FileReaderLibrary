@@ -11,15 +11,17 @@ namespace FileReaderLibrary
         {
             IRoleBasedSecurityStrategy security = new SimpleRoleBasedSecurityStrategy();
             IEncryptionStrategy encryption = new ReverseEncryptionStrategy();
-            IFileReader encryptedXmlReader = new EncryptedXmlFileReader(encryption);
+            TextFileReader textReader = new();
+            XmlFileReader xmlReader = new();
+            EncryptedXmlFileReader encryptedXmlReader = new (encryption);
+            EncryptedJsonFileReader encryptedJsonReader = new(encryption);
+            JsonFileReader jsonReader = new();
 
             // Test text file
-            TextFileReader textReader = new();
             Console.WriteLine("=== TEXT FILE ===");
             Console.WriteLine(textReader.ReadFile("TestFiles/sample.txt"));
 
             // Test XML file
-            XmlFileReader xmlReader = new();
             Console.WriteLine("\n=== XML FILE ===");
             Console.WriteLine(xmlReader.ReadFile("TestFiles/sample.xml"));
 
@@ -64,9 +66,12 @@ namespace FileReaderLibrary
             Console.WriteLine(textFileUserReader.ReadFile("TestFiles/secure.txt"));
 
             // Test JSON file
-            IFileReader jsonReader = new JsonFileReader();
             Console.WriteLine("\n=== JSON FILE ===");
             Console.WriteLine(jsonReader.ReadFile("TestFiles/sample.json"));
+
+            // Test encrypted JSON file
+            Console.WriteLine("\n=== ENCRYPTED JSON FILE ===");
+            Console.WriteLine(encryptedJsonReader.ReadFile("TestFiles/encrypted.json"));
         }
     }
 }
