@@ -1,7 +1,4 @@
-﻿using System;
-using FileReaderLibrary.Interfaces;
-using FileReaderLibrary.Services;
-using FileReaderLibrary.Strategies;
+﻿using FileReaderLibrary.Factories;
 
 namespace FileReaderLibrary
 {
@@ -9,13 +6,11 @@ namespace FileReaderLibrary
     {
         static void Main(string[] args)
         {
-            IRoleBasedSecurityStrategy security = new SimpleRoleBasedSecurityStrategy();
-            IEncryptionStrategy encryption = new ReverseEncryptionStrategy();
-            TextFileReader textReader = new();
-            XmlFileReader xmlReader = new();
-            EncryptedXmlFileReader encryptedXmlReader = new (encryption);
-            EncryptedJsonFileReader encryptedJsonReader = new(encryption);
-            JsonFileReader jsonReader = new();
+            var textReader = FileReaderFactory.CreateReader("txt", false, false, "");
+            var xmlReader = FileReaderFactory.CreateReader("xml", false, false, "");
+            var encryptedXmlReader = FileReaderFactory.CreateReader("xml", true, false, "");
+            var encryptedJsonReader = FileReaderFactory.CreateReader("json", true, false, "");
+            var jsonReader = FileReaderFactory.CreateReader("json", false, false, "");
 
             // Test text file
             Console.WriteLine("=== TEXT FILE ===");
@@ -26,18 +21,18 @@ namespace FileReaderLibrary
             Console.WriteLine(xmlReader.ReadFile("TestFiles/sample.xml"));
 
             // Test encrypted text file
-            EncryptedTextFileReader encryptedReader = new(encryption);
+            var encryptedReader = FileReaderFactory.CreateReader("txt", true, false, "");
             Console.WriteLine("\n=== ENCRYPTED TEXT FILE ===");
             Console.WriteLine(encryptedReader.ReadFile("TestFiles/encrypted.txt"));
 
             // Test XML as admin
             Console.WriteLine("\n=== READING AS ADMIN ===");
-            SecuredXmlFileReader adminReader = new(security, "admin");
+            var adminReader = FileReaderFactory.CreateReader("xml", false, true, "admin");
             Console.WriteLine(adminReader.ReadFile("TestFiles/secure.xml"));
 
             // Test XML regular user
             Console.WriteLine("\n=== READING AS USER ===");
-            SecuredXmlFileReader userReader = new(security, "user");
+            var userReader = FileReaderFactory.CreateReader("xml", false, true, "user");
             Console.WriteLine(userReader.ReadFile("TestFiles/secure.xml"));
 
             // Test unauthorized access for XML
@@ -57,12 +52,12 @@ namespace FileReaderLibrary
 
             // Test Text-File as admin
             Console.WriteLine("\n=== READING TEXT AS ADMIN ===");
-            SecuredTextFileReader textFileAdminReader = new(security, "admin");
+            var textFileAdminReader = FileReaderFactory.CreateReader("txt", false, true, "admin");
             Console.WriteLine(textFileAdminReader.ReadFile("TestFiles/secure.txt"));
 
             // Test Text-File as user
             Console.WriteLine("\n=== READING TEXT AS USER ===");
-            SecuredTextFileReader textFileUserReader = new(security, "user");
+            var textFileUserReader = FileReaderFactory.CreateReader("txt", false, true, "user");
             Console.WriteLine(textFileUserReader.ReadFile("TestFiles/secure.txt"));
 
             // Test JSON file
@@ -72,6 +67,14 @@ namespace FileReaderLibrary
             // Test encrypted JSON file
             Console.WriteLine("\n=== ENCRYPTED JSON FILE ===");
             Console.WriteLine(encryptedJsonReader.ReadFile("TestFiles/encrypted.json"));
+
+            Console.WriteLine("\n=== SECURED JSON (User) ===");
+            var userJsonReader = FileReaderFactory.CreateReader("json", false, true, "user");
+            Console.WriteLine(userJsonReader.ReadFile("TestFiles/secure.json"));
+
+            Console.WriteLine("\n=== SECURED JSON (Admin) ===");
+            var adminJsonReader = FileReaderFactory.CreateReader("json", false, true, "admin");
+            Console.WriteLine(adminJsonReader.ReadFile("TestFiles/secure.json"));
         }
     }
 }
